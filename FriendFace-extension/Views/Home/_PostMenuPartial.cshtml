@@ -1,0 +1,16 @@
+@* _PostMenuPartial file *@
+
+@model Post
+
+<div id="postMenuButton-@Model.Id" class="dropdown">
+    <button class="btn btn-sm shadow-none p-0" type="button" id="postMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <div class="dropdown-menu " aria-labelledby="postMenuButton">
+        <a id="editField-@Model.Id" class="dropdown-item" href="#">Edit</a>
+        <a id="deleteField-@Model.Id" class="dropdown-item" href="#">Delete</a>
+    </div>
+</div>
+
+<script src="~/js/Home/Post/postEdit.js"></script>
+<script src="~/js/Home/Post/postDelete.js"></script>

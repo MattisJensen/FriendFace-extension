@@ -1,0 +1,50 @@
+﻿@* Index file *@
+
+@model FriendFace.ViewModels.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    @* Icons for heart and comment *@
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+<section class="container text-center mb-3">
+    <h3>Welcome back @Model.User.FirstName!</h3>
+    <div class="d-flex justify-content-center">
+        <div class="btn-group btn-group-sm me-3" role="feed" aria-label="Toggle between feed and own content">
+            <input type="radio" class="btn-check" name="feed" id="following-feed" autocomplete="off" @if (Model.FollowingPosts){@Html.Raw("checked")}>
+            <label class="btn btn-outline-primary" id="following-feed-btn" for="following-feed">Feed</label>
+            <input type="radio" class="btn-check" name="feed" id="profile-feed" autocomplete="off" @if (!Model.FollowingPosts){@Html.Raw("checked")}>
+            <label class="btn btn-outline-primary" id="profile-feed-btn" for="profile-feed">My Published Posts</label>
+        </div>
+
+        <button id="post-btn" type="button" class="btn btn-outline-primary btn-sm ">
+            <i class="fas fa-plus"></i> Create Post
+        </button>
+    </div>
+</section>
+
+<div id="postCreateContainer" style="display: none">
+    <partial name="_PostCreatePartial" model="Model.PostCharLimit"/>
+</div>
+
+@* Posts in feed *@
+<div id="feed">
+    <partial name="_PostFeedPartial" model="Model"/>
+</div>
+
+<script src="~/js/Home/Post/postCreate.js"></script>
+<script src="~/js/Home/toggleFeed.js"></script>
+
+<script>
+    var postCharLimit = @Model.PostCharLimit;
+</script>
+
+</body>
+</html>

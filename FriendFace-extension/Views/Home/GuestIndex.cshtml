@@ -1,0 +1,48 @@
+﻿@model FriendFace.ViewModels.GuestIndexViewModel
+@{
+    ViewData["Title"] = "Welcome to FriendFace";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container text-center mb-3">
+        <h3>Welcome to FriendFace!</h3>
+        <p>Check out some of the most popular posts below!</p>
+    </div>
+
+    <div class="container">
+        @foreach (var post in Model.TopLikedPosts)
+        {
+            <div class="col-md-6 offset-md-3 mb-3">
+                <div class="card">
+                    <div class="card-header" style="background-color: #f8f8f8">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <span style="font-weight: bold;">@post.User.FirstName @Html.Raw(" ") @post.User.LastName</span>
+                                <span style="font-size: 80%;" class="text-muted">@Html.Raw("@")@post.User.UserName</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-left">@post.Content</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">@post.Time.ToString("HH:mm dd/MM/yy")</small>
+                            <span style="font-size: 80%;" class="text-muted">
+                                <i class="far fa-heart"></i> @post.Likes.Count
+                                <i class="far fa-comment"></i> @post.Comments.Count
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</body>
+</html>

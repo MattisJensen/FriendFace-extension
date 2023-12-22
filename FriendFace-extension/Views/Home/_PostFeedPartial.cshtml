@@ -1,0 +1,56 @@
+@* _PostFeedPartial file *@
+
+@model FriendFace.ViewModels.HomeIndexViewModel
+
+@foreach (var post in Model.PostsInFeed)
+{
+    <div id="postContainer-@post.Id" class="card col-md-6 offset-md-3 mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            @* Name, Username *@
+            <header>
+                <span class="card-header-text">@post.User.FirstName @Html.Raw(" ") @post.User.LastName</span>
+                <span class="text-muted small">@Html.Raw("@")@post.User.UserName</span>
+            </header>
+
+            @* Menu for post *@
+            @if (post.User.Id == Model.User.Id)
+            {
+                <partial name="_PostMenuPartial" model="post"/>
+            }
+        </div>
+
+        <div class="card-body">
+            @* The content of the post *@
+            <article id="postContent-@post.Id">@post.Content</article>
+            
+            @* Date and icons *@
+            <footer class="d-flex justify-content-between align-items-center" id="postFooter-@post.Id">
+                <small class="text-muted">@post.Time.ToString("HH:mm dd/MM/yy")</small>
+
+                <span class="text-muted small">
+                    @{
+                        bool isLiked = post.Likes.Any(like => like.UserId == Model.User.Id);
+                        string heartIcon = GetHeartIcon(isLiked);
+                        string heartIconColor = isLiked ? "red" : "inherit";
+                    }
+                    <i class="@heartIcon text-decoration-none pointer" id="likeButton-@post.Id" style="color: @heartIconColor"></i>
+                    <span id="likeCount-@post.Id">@post.Likes.Count</span>
+                    <i class="far fa-comment comment-btn pointer" id="commentButton-@post.Id" data-post-id="@post.Id"></i> @post.Comments.Count
+                </span>
+            </footer>
+
+            @* Comments *@
+            <partial name="_CommentPartial" model="post.Comments"/>
+            <div class="col-md-6 offset-md-3 mb-3" id="commentCreateContainer-@post.Id" style="display: none">
+                <p id="commentContent-create-@post.Id" contenteditable="false" class="card-text text-left input-field"></p>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    string GetHeartIcon(bool isLiked) => isLiked ? "fas fa-heart" : "far fa-heart";
+}
+
+<script src="~/js/Home/commentCreate.js"></script>
+<script src="~/js/Home/Post/postToggleLike.js"></script>

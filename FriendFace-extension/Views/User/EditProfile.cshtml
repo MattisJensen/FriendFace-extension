@@ -1,0 +1,45 @@
+﻿@model FriendFace.ViewModels.UserProfileViewModel
+
+@{
+    ViewBag.Title = "Edit Profile";
+}
+
+<h2>Edit Profile</h2>
+
+@using (Html.BeginForm("SaveEditProfile", "User", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <!-- Note to user -->
+    <p>Update your email and password as needed.</p>
+
+    <!-- Email -->
+    <div class="form-group">
+        @Html.LabelFor(m => m.user.Email)
+        @Html.TextBoxFor(m => m.user.Email, new { @class = "form-control", placeholder = "Email" })
+        @Html.ValidationMessageFor(m => m.user.Email)
+    </div>
+
+    <!-- Current Password -->
+    <div class="form-group">
+        @Html.LabelFor(m => m.ChangePasswordViewModel.CurrentPassword)
+        @Html.PasswordFor(m => m.ChangePasswordViewModel.CurrentPassword, new { @class = "form-control", placeholder = "Current Password" })
+        @Html.ValidationMessageFor(m => m.ChangePasswordViewModel.CurrentPassword)
+    </div>
+
+    <!-- New Password -->
+    <div class="form-group">
+        @Html.LabelFor(m => m.ChangePasswordViewModel.NewPassword)
+        @Html.PasswordFor(m => m.ChangePasswordViewModel.NewPassword, new { @class = "form-control", placeholder = "New Password" })
+        @Html.ValidationMessageFor(m => m.ChangePasswordViewModel.NewPassword)
+    </div>
+
+    <!-- Confirm New Password -->
+    <div class="form-group">
+        @Html.LabelFor(m => m.ChangePasswordViewModel.ConfirmNewPassword)
+        @Html.PasswordFor(m => m.ChangePasswordViewModel.ConfirmNewPassword, new { @class = "form-control", placeholder = "Confirm New Password" })
+        @Html.ValidationMessageFor(m => m.ChangePasswordViewModel.ConfirmNewPassword)
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+}

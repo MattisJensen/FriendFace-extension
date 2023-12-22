@@ -1,0 +1,40 @@
+﻿@model FriendFace.ViewModels.UserProfileViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "View Profile";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>@("@")@Model.user.UserName@("'s") Profile</h2>
+            <div class="profile-header">
+                <h3>Firstname: @Model.user.FirstName</h3>
+                <h3>Lastname: @Model.user.LastName</h3>
+                <p>Email: @Model.user.Email</p>
+            </div>
+            @if (Model.isCurrentUser == false && Model.isLoggedIn)
+            {
+                if (Model.isFollowing)
+                {
+                    <button id="unfollowButton-@Model.user.Id" class="btn btn-sm btn-outline-secondary">Unfollow</button>
+                }
+                else
+                {
+                    <button id="followButton-@Model.user.Id" class="btn btn-sm btn-outline-secondary">Follow</button>
+                }
+            }
+
+
+            <!-- Additional profile information here -->
+            <!-- Edit profile button -->
+            @if (Model.isCurrentUser)
+            {
+                <a href="@Url.Action("EditProfile", "User")" class="btn btn-primary">Edit Profile</a>
+            }
+
+        </div>
+    </div>
+   </div>
+<script src="~/js/Search/searchUser.js"></script>
+

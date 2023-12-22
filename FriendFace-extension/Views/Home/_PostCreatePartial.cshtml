@@ -1,0 +1,20 @@
+@* _PostCreatePartial file *@
+
+<div class="col-md-6 offset-md-3 mb-3">
+    <form id="postContent-form">
+        <fieldset>
+            <section class="mb-3">
+                <input name="content" type="text" class="form-control shadow-none input-field" id="postContent-publishField" placeholder="what's on your mind..." readonly>
+                <div class="form-text">
+                    <p><span id="postContent-chars">0</span>/@Model chars</p>
+                </div>
+            </section>
+            <button class="btn btn-success btn-sm mb-4 me-2" id="postContent-button-publish" type="submit">
+                <i class="fas fa-arrow-up"></i> Publish Post
+            </button>
+            <button id="postContent-button-cancel" class="btn btn-secondary btn-sm mb-4" type="button">Cancel</button>
+        </fieldset>
+    </form>
+</div>
+
+<script src="~/js/Home/Post/postCancel.js"></script>

@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register</title>
+</head>
+<body>
+<div class="container">
+    <h2>Register</h2>
+    @using (Html.BeginForm("Register", "Login", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        
+        <fieldset class="form-group">
+            <label for="fname"><b>First Name</b></label>
+            <input type="text" placeholder="Enter First Name" name="fname" required>
+        </fieldset>
+        
+        <fieldset class="form-group">
+            <label for="lname"><b>Last Name</b></label>
+            <input type="text" placeholder="Enter Last Name" name="lname" required>
+        </fieldset>
+
+        <fieldset class="form-group">
+            <label for="uname"><b>Username</b></label>
+            <input type="text" placeholder="Enter Username" name="uname" required>
+        </fieldset>
+        
+        <fieldset class="form-group">
+            <label for="email"><b>Email</b></label>
+            <input type="text" placeholder="Enter Email" name="email" required>
+        </fieldset>
+
+        <fieldset class="form-group">
+            <label for="psw"><b>Password</b></label>
+            <input type="password" placeholder="Enter Password" name="psw" required>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <p class="text-danger">@ViewBag.ErrorMessage</p>
+    }
+</div>
+</body>
+</html>

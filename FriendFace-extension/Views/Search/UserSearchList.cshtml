@@ -1,0 +1,39 @@
+@model FriendFace.ViewModels.UserSearchListViewModel
+@{
+    ViewData["Title"] = "Search";
+}
+
+<!DOCTYPE html>
+<html>
+<body>
+<div class="col-md-6 text-left offset-md-3 mb-3 ">
+    <h5>@Model.Users.Count users found</h5>
+</div>
+
+@foreach (var user in Model.Users)
+{
+    <article id="userSearchContainer-@user.Id" class="card col-md-6 offset-md-3 mb-3 pointer">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="text-muted small"> @Html.Raw("@")@user.UserName</span>
+            @if (Model.LoggedInUser != null)
+            {
+                if (Model.LoggedInUser.Following.Any(f => f.FollowingId == user.Id))
+                {
+                    <button id="unfollowButton-@user.Id" class="btn btn-sm btn-outline-secondary small" type="button">Unfollow</button>
+                }
+                else
+                {
+                    <button id="followButton-@user.Id" class="btn btn-sm btn-outline-secondary small" type="button">Follow</button>
+                }
+            } 
+        </div>
+
+        <div class="card-body">
+            <span> @user.FirstName @Html.Raw(" ") @user.LastName</span>
+        </div>
+    </article>
+}
+
+<script src="~/js/Search/searchUser.js"></script>
+</body>
+</html>

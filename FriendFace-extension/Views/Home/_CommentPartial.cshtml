@@ -1,0 +1,17 @@
+@* _CommentPartial file *@
+
+@model  ICollection<Comment>
+
+@foreach (var comment in Model)
+{
+    <div class="card mt-1">
+        <div class="card-body">
+            <div>
+                <span style="font-weight: bold;font-size: 90%;">@comment.User.FirstName @Html.Raw(" ") @comment.User.LastName</span>
+                <span style="font-size: 70%;" class="text-muted">@Html.Raw("@")@comment.User.UserName</span>
+                <small style="font-size: 70%;" class="text-muted">@comment.Time.ToString("HH:mm dd/MM/yy")</small>
+                <p style="font-size: 90%;" class="card-text text-left">@comment.Content</p>
+            </div>
+        </div>
+    </div>
+}
