@@ -23,7 +23,6 @@ function addEditForm(postId) {
 
     var formHtml = `
             <form id="editContent-form-${postId}">
-                <input class="d-none" id="editContent-${postId}" name="PostId" value="${postId}">
                 <input class="form-control-plaintext shadow-none input-field" type="text" id="editContent-editField-${postId}" name="Content" value="${originalPostContent}">
 
                 <div id="editContent-charcounter-container-${postId}" class="form-text">
@@ -40,10 +39,6 @@ function addEditForm(postId) {
 }
 
 function addEditFunctionality(postId) {
-    var form = $('#editContent-form-' + postId);
-    form.attr('action', "/Home/EditPost");
-    form.attr('method', "post");
-    
     var menuButton = $('#postMenuButton-' + postId);
     menuButton.addClass('d-none');
     
@@ -56,17 +51,51 @@ function addEditFunctionality(postId) {
     var editField = $('#editContent-editField-' + postId);
     editField.focus();
 
-    cancelButton.on('click', function (event) {
-        leaveEditMode(postId);
+    cancelButton.on('click', function () {
+        leaveEditPostMode(postId);
     });
 
     editField.on('input', function () {
         charCountText.text(editField.val().length); // Update character count text
         saveButton.prop('disabled', editField.val().length > charLimit); // Disable save button if content length exceeds char limit
     });
+
+    saveButton.on('click', function () {
+        event.preventDefault(); // Prevent default form submission
+        submitEdit(postId); 
+    });
 }
 
-function leaveEditMode(postId) {
+function submitEdit(postId) {
+    var editField = $('#editContent-editField-' + postId);
+    var editedContent = editField.val();
+
+    var postContentField = $('#postContent-' + postId);
+    var originalPostContent = postContentField.text();
+    postContentField.text(editedContent);
+    
+    leaveEditPostMode(postId);
+    
+    var postData = {
+        PostId: postId,
+        Content: editedContent
+    };
+    
+    $.ajax({
+        type: 'PUT',
+        url: '/Home/EditPost',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify(postData),
+        success: function (success) {
+        },
+        error: function (error) {
+            postContentField.text(originalPostContent);
+        }
+    });
+}
+
+function leaveEditPostMode(postId) {
     var menuButton = $('#postMenuButton-' + postId);
     var form = $('#editContent-form-' + postId);
     var postContentField = $('#postContent-' + postId);
