@@ -31,19 +31,13 @@
                     @{
                         bool isLiked = post.Likes.Any(like => like.UserId == Model.User.Id);
                         string heartIcon = GetHeartIcon(isLiked);
-                        string heartIconColor = isLiked ? "red" : "inherit";
+                        string heartIconColor = isLiked ? "color-red" : "color-inherit";
                     }
-                    <i class="@heartIcon text-decoration-none pointer" id="likeButton-@post.Id" style="color: @heartIconColor"></i>
+                    <i class="@heartIcon @heartIconColor text-decoration-none pointer" id="likeButton-@post.Id"></i>
                     <span id="likeCount-@post.Id">@post.Likes.Count</span>
                     <i class="far fa-comment comment-btn pointer" id="commentButton-@post.Id" data-post-id="@post.Id"></i> @post.Comments.Count
                 </span>
             </footer>
-
-            @* Comments *@
-            <partial name="_CommentPartial" model="post.Comments"/>
-            <div class="col-md-6 offset-md-3 mb-3" id="commentCreateContainer-@post.Id" style="display: none">
-                <p id="commentContent-create-@post.Id" contenteditable="false" class="card-text text-left input-field"></p>
-            </div>
         </div>
     </div>
 }
@@ -51,6 +45,3 @@
 @functions {
     string GetHeartIcon(bool isLiked) => isLiked ? "fas fa-heart" : "far fa-heart";
 }
-
-<script src="~/js/Home/commentCreate.js"></script>
-<script src="~/js/Home/Post/postToggleLike.js"></script>

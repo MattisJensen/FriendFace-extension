@@ -55,3 +55,11 @@ body {
 .pointer {
     cursor: pointer;
 }
+
+.color-red {
+    color: red;
+}
+
+.color-inherit {
+    color: inherit;
+}
