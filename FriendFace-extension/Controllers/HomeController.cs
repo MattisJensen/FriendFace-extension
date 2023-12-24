@@ -64,19 +64,6 @@ namespace FriendFace.Controllers
             }
         }
 
-        public IActionResult IndexWithProfileFeed()
-        {
-            var loggedInUser = _userQueryService.GetLoggedInUser();
-            if (loggedInUser == null)
-            {
-                return RedirectToAction("Login", "Login");
-            }
-
-            var model = _postService.GetHomeIndexViewModel(false);
-
-            return View("Index", model);
-        }
-
         public IActionResult Privacy()
         {
             return View();
@@ -88,11 +75,17 @@ namespace FriendFace.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [HttpGet]
-        public IActionResult ToggleLikePost(int postId)
+        [HttpPost]
+        public IActionResult ToggleLikePost([FromBody] int postId)
         {
-            _postService.ToggleLikePost(postId);
-            return RedirectToAction("Index");
+            if (_postService.ToggleLikePost(postId))
+            {
+                return Json(Ok());
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to toggle like." });
+            }
         }
 
         [HttpGet]
@@ -102,32 +95,89 @@ namespace FriendFace.Controllers
             return Json(result);
         }
 
+        [HttpPut]
+        public IActionResult DeletePost([FromBody] int postId)
+        {
+            if (_postService.DeletePost(postId))
+            {
+                return Json(Ok());
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to delete the post." });
+            }
+        }
+
+        [HttpPut]
+        public IActionResult EditPost([FromBody] PostIdContentModel model)
+        {
+            if (_postService.EditPost(model))
+            {
+                return Json(Ok());
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to edit the post." });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CreatePost([FromBody] string content)
+        {
+            string postAsHtmlElement = _postService.CreatePost(content, ControllerContext);
+            if (postAsHtmlElement != null)
+            {
+                return Json(Ok(postAsHtmlElement));
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to create the post." });
+            }
+        }
+        
         [HttpGet]
-        public IActionResult DeletePost(int postId)
+        public IActionResult GetCommentsFromPost([FromQuery] int postId)
         {
-            _postService.DeletePost(postId);
-            return RedirectToAction("Index");
+            string commentsAsHtmlElement = _commentService.GetPostComments(postId, ControllerContext);
+            if (commentsAsHtmlElement != null)
+            {
+                return Json(Ok(commentsAsHtmlElement));
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to get comments." });
+            }
         }
 
         [HttpPost]
-        public IActionResult EditPost(PostIdContentModel model)
+        public IActionResult CreateComment([FromBody] PostIdContentModel model)
         {
-            _postService.EditPost(model);
-            return RedirectToAction("Index");
+            string postAsHtmlElement = _commentService.CreateComment(model.Content, model.PostId, ControllerContext);
+            if (postAsHtmlElement != null)
+            {
+                return Json(Ok(postAsHtmlElement));
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to create the comment." });
+            }
         }
-
-        [HttpPost]
-        public IActionResult CreatePost(string content)
+        
+        [HttpGet]
+        public IActionResult GetFeedPosts([FromQuery] string feedtype)
         {
-            _postService.CreatePost(content, ControllerContext);
-            return RedirectToAction("Index");
-        }
+            FeedType type = Enum.Parse<FeedType>(feedtype, true);
 
-        [HttpPost]
-        public IActionResult CreateComment(PostIdContentModel model)
-        {
-            _commentService.CreateComment(model.Content, model.PostId);
-            return RedirectToAction("Index");
+            string postsAsHtmlElement = _postService.GetFeedPosts(type, ControllerContext);
+            
+            if (postsAsHtmlElement != null)
+            {
+                return Json(Ok(postsAsHtmlElement));
+            }
+            else
+            {
+                return BadRequest(new { error = "Failed to get posts." });
+            }
         }
     }
 }
