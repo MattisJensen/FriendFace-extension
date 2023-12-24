@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     var cancelButton = $('#postContent-button-cancel');
 
+    // Remove existing listeners to prevent multiple listeners being attached to one field
+    cancelButton.off('click');
+    
     cancelButton.on('click', function (event) {
         postCancel();
     });

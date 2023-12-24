@@ -3,6 +3,7 @@ using FriendFace.Models;
 using FriendFace.Services;
 using FriendFace.Services.DatabaseService;
 using FriendFace.ViewModels;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -33,7 +34,9 @@ public class PostService
 
         List<Post> postsInFeed;
 
-        postsInFeed = followingPosts ? _postQueryService.GetLatestPostsFromFeed(loggedInUser.Id) : _postQueryService.GetPostsFromUserId(loggedInUser.Id);
+        postsInFeed = followingPosts
+            ? _postQueryService.GetLatestPostsFromFeed(loggedInUser.Id)
+            : _postQueryService.GetPostsFromUserId(loggedInUser.Id);
 
         var postCharLimit = _postQueryService.GetPostCharacterLimit();
 
@@ -47,11 +50,11 @@ public class PostService
         return model;
     }
 
-    public void ToggleLikePost(int postId)
+    public bool ToggleLikePost(int postId)
     {
         var post = _postQueryService.GetPostFromId(postId);
 
-        if (post == null) throw new InvalidOperationException("Post not found");
+        if (post == null) return false;
 
         var user = _userQueryService.GetLoggedInUser();
 
@@ -62,16 +65,16 @@ public class PostService
             if (existingLike)
             {
                 // If a like by the user already exists, remove it
-                _postDeleteService.RemoveLikeFromPost(postId, user.Id);
+                return _postDeleteService.RemoveLikeFromPost(postId, user.Id);
             }
             else
             {
-                _postCreateService.AddLikeToPost(postId, user.Id);
+                return _postCreateService.AddLikeToPost(postId, user.Id);
             }
         }
         catch (Exception ex)
         {
-            throw new Exception("An error occurred while toggling the like on the post. ", ex);
+            return false;
         }
     }
 
@@ -96,38 +99,32 @@ public class PostService
         }
     }
 
-    public void DeletePost(int postId)
+    public bool DeletePost(int postId)
     {
         try
         {
             // Check if the logged-in user is the owner of the post
             var loggedInUser = _userQueryService.GetLoggedInUser();
-            if (loggedInUser == null)
-            {
-                throw new Exception("You must be logged in to delete a post.");
-            }
-            
+            if (loggedInUser == null) return false;
+
             var post = _postQueryService.GetPostFromId(postId);
 
             if (post.UserId == loggedInUser.Id)
             {
-                if (!_postDeleteService.SoftDeletePost(postId))
-                {
-                    throw new Exception("An error occurred while deleting the post.");
-                }
+                return _postDeleteService.SoftDeletePost(postId);
             }
             else
             {
-                throw new Exception("You do not have permission to delete this post.");
+                return false;
             }
         }
         catch (Exception ex)
         {
-            throw new Exception("An error occurred while deleting the post.", ex);
+            return false;
         }
     }
 
-    public void EditPost(PostIdContentModel model)
+    public bool EditPost(PostIdContentModel model)
     {
         try
         {
@@ -135,64 +132,91 @@ public class PostService
             string editedContent = model.Content;
 
             var loggedInUser = _userQueryService.GetLoggedInUser();
-            if (loggedInUser == null)
-            {
-                throw new Exception("You must be logged in to edit a post.");
-            }
-            
+            if (loggedInUser == null) return false;
+
             var post = _postQueryService.GetPostFromId(postId);
-            
-            if (post.UserId == loggedInUser.Id)
+
+            if (post.UserId == loggedInUser.Id && editedContent.Length <= _postQueryService.GetPostCharacterLimit())
             {
-                // Check if the edited content is within the character limit
-                if (editedContent.Length <= _postQueryService.GetPostCharacterLimit())
-                {
-                    if (!_postUpdateService.UpdatePost(postId, editedContent)) 
-                    {
-                        throw new Exception("An error occurred while editing the post.");
-                    }
-                }
-                else
-                {
-                    throw new Exception("Edited content exceeds " + _postQueryService.GetPostCharacterLimit() + " characters.");
-                }
+                return _postUpdateService.UpdatePost(postId, editedContent);
             }
             else
             {
-                throw new Exception("You do not have permission to edit this post.");
+                return false;
             }
         }
         catch (Exception ex)
         {
-            throw new Exception("An error occurred while editing the post.", ex);
+            return false;
         }
     }
 
-    public void CreatePost(string content, ControllerContext controllerContext)
+    public string CreatePost(string content, ControllerContext controllerContext)
     {
         try
         {
             // Check if the logged-in user is the owner of the post
             var loggedInUser = _userQueryService.GetLoggedInUser();
+            var charLimit = _postQueryService.GetPostCharacterLimit();
 
             // Check if logged in user is valid and if edited content is within character limit
-            if (loggedInUser != null && loggedInUser.Id > 0 &&
-                content.Length <= _postQueryService.GetPostCharacterLimit())
-            {
-                if (!_postCreateService.CreatePost(content, loggedInUser))
+            if (loggedInUser == null || content.Length > charLimit) return null;
+                if (_postCreateService.CreatePost(content, loggedInUser))
                 {
-                    throw new Exception("An error occurred while creating the post.");
+                    var createdPost = _postQueryService.GetLatestPostFromUserId(loggedInUser.Id);
+                    List<Post> posts = new List<Post>();
+                    posts.Add(createdPost);
+                    
+                    return FileLoader.LoadFile(controllerContext, "_PostFeedPartial", new HomeIndexViewModel()
+                    {
+                        User = loggedInUser,
+                        PostsInFeed = posts,
+                        FollowingPosts = false,
+                        PostCharLimit = charLimit
+                    });
                 }
-            }
-            else
-            {
-                throw new Exception("Content exceeds " + _postQueryService.GetPostCharacterLimit() +
-                                    " characters.");
-            }
+                else
+                {
+                    return null;
+                }
         }
         catch (Exception ex)
         {
-            throw new Exception("An error occurred while creating the post.", ex);
+            return null;
         }
+    }
+
+    public string GetFeedPosts(FeedType type, ControllerContext controllerContext)
+    {
+        var loggedInUser = _userQueryService.GetLoggedInUser();
+        if (loggedInUser == null) return null;
+
+        List<Post> posts;
+        bool followingPosts = false;
+        
+        switch (type)
+        {
+            case FeedType.Profile:
+                posts = _postQueryService.GetPostsFromUserId(loggedInUser.Id);
+                followingPosts = false;
+                break;
+            case FeedType.Following:
+                posts = _postQueryService.GetLatestPostsFromFeed(loggedInUser.Id);
+                followingPosts = true;
+                break;
+            default:
+                posts = null;
+                break;
+        }
+
+        if (posts == null) return null;
+        
+        return FileLoader.LoadFile(controllerContext, "_PostFeedPartial", new HomeIndexViewModel()
+        {
+            User = loggedInUser,
+            PostsInFeed = posts,
+            FollowingPosts = followingPosts,
+            PostCharLimit = _postQueryService.GetPostCharacterLimit()
+        });
     }
 }
