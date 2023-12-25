@@ -35,7 +35,8 @@
                     }
                     <i class="@heartIcon @heartIconColor text-decoration-none pointer" id="likeButton-@post.Id"></i>
                     <span id="likeCount-@post.Id">@post.Likes.Count</span>
-                    <i class="far fa-comment comment-btn pointer" id="commentButton-@post.Id" data-post-id="@post.Id"></i> @post.Comments.Count
+                    <i class="far fa-comment comment-btn pointer" id="commentButton-@post.Id" data-post-id="@post.Id"></i>
+                    <span id="commentCount-@post.Id">@post.Comments.Count</span>
                 </span>
             </footer>
         </div>

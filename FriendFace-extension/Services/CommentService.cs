@@ -1,4 +1,6 @@
+using FriendFace.Models;
 using FriendFace.Services.DatabaseService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FriendFace.Services;
 
@@ -7,40 +9,74 @@ public class CommentService
     private readonly UserQueryService _userQueryService;
     private readonly PostQueryService _postQueryService;
     private readonly CommentCreateService _commentCreateService;
+    private readonly CommentQueryService _commentQueryService;
 
-    public CommentService(UserQueryService userQueryService, PostQueryService postQueryService, CommentCreateService commentCreateService)
+    public CommentService(UserQueryService userQueryService, PostQueryService postQueryService,
+        CommentCreateService commentCreateService, CommentQueryService commentQueryService)
     {
         _userQueryService = userQueryService;
         _postQueryService = postQueryService;
         _commentCreateService = commentCreateService;
+        _commentQueryService = commentQueryService;
     }
-    
-    public object CreateComment(string content, int postId)
+
+    public string CreateComment(string content, int postId, ControllerContext controllerContext)
     {
         try
         {
             var loggedInUser = _userQueryService.GetLoggedInUser();
 
-            if (loggedInUser != null && loggedInUser.Id > 0)
+            if (loggedInUser == null && content.Length > _postQueryService.GetPostCharacterLimit()) return null;
+
+            if (_commentCreateService.CreateComment(content, postId, loggedInUser))
             {
-                // Check if the edited content is within the character limit
-                if (content.Length <= _postQueryService.GetPostCharacterLimit())
+                Comment comment = new Comment
                 {
-                    return new { success = _commentCreateService.CreateComment(content, postId, loggedInUser) };
-                }
-                else
-                {
-                    return new { success = false, message = "Content exceeds " + _postQueryService.GetPostCharacterLimit() + " characters." };
-                }
+                    Content = content,
+                    Time = DateTime.Now,
+                    PostId = postId,
+                    User = loggedInUser,
+                };
+
+                List<Comment> comments = new List<Comment>();
+                comments.Add(comment);
+
+                return FileLoader.LoadFile(controllerContext, "_CommentPartial", comments);
             }
             else
             {
-                return new { success = false, message = "You do not have permission to create this post." };
+                return null;
             }
         }
         catch (Exception ex)
         {
-            return new { success = false, message = "An error occurred while creating the post." };
+            return null;
+        }
+    }
+
+    public string GetPostComments(int postId, ControllerContext controllerContext)
+    {
+        try
+        {
+            var loggedInUser = _userQueryService.GetLoggedInUser();
+
+            if (loggedInUser == null) return null;
+
+            var comments = _commentQueryService.GetCommentsByPostId(postId);
+            
+            if (comments != null)
+            {
+                if (comments.Count == 0) return "";
+                return FileLoader.LoadFile(controllerContext, "_CommentPartial", comments);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception ex)
+        {
+            return null;
         }
     }
 }
